@@ -5,6 +5,7 @@
 <h1 align="center">
   Catq
 </h1>
+
 Aplikasi Catatan sederhana berbasis `WebView` dengan penyimpanan `LocalStorage format JSON`. Ada beberapa [fitur] (https://github.com/pepeng28/CatQ/new/main?filename=README.md#fitur) yg menarik jika anda ingin coba dan untuk [installation](https://github.com/pepeng28/CatQ/new/main?filename=README.md#installation) nya ada di deskripsi di bawah.
 
 ### Fitur
