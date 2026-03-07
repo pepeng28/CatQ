@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/pepeng28/CatQ/raw/main/hopweb/backup_v1.0.0/CatQ/favicon.png" width="100" alt="CatQ">
+  <img src="https://github.com/pepeng28/CatQ/raw/main/hopweb/backup_v1.0.0/CatQ/favicon.png" width="150" alt="CatQ">
 </p>
 
 <h1 align="center">
