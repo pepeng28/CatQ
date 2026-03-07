@@ -17,7 +17,7 @@ Aplikasi Catatan sederhana berbasis `WebView` dengan penyimpanan `LocalStorage f
 * `hapus catatan` ( di tahan bakal muncul text hapus)
 
 ### Installation
-Untuk install nya udah ku taruh di [GitHub Releases]() tekan aja tulisan `GitHub Releases` untuk menuju link nya.
+Untuk install nya udah ku taruh di [GitHub Releases](https://github.com/pepeng28/CatQ/releases) tekan aja tulisan `GitHub Releases` untuk menuju link nya.
 
 
 
