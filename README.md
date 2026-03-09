@@ -6,7 +6,9 @@
   Catq
 </h1>
 
-Aplikasi Catatan sederhana berbasis `WebView` dengan penyimpanan `LocalStorage format JSON`. Ada beberapa [fitur](https://github.com/pepeng28/CatQ?tab=readme-ov-file#fitur) yg menarik jika anda ingin coba dan untuk [installation](https://github.com/pepeng28/CatQ?tab=readme-ov-file#installation) nya ada di deskripsi di bawah.
+Aplikasi catatan sederhana berbasis `WebView` yang menyimpan data menggunakan `LocalStorage` dengan format `JSON`. Aplikasi ini dirancang ringan dan dapat digunakan tanpa koneksi internet karena semua data disimpan langsung di perangkat.
+Walaupun sederhana, aplikasi ini memiliki beberapa fitur yang cukup berguna untuk membantu mencatat dan mengelola catatan dengan mudah. Jika anda tertarik untuk mencobanya, silakan lihat daftar [fitur](https://github.com/pepeng28/CatQ?tab=readme-ov-file#fitur) yang tersedia.
+Untuk cara pemasangan dan menjalankan aplikasi, anda dapat mengikuti panduan [installation](https://github.com/pepeng28/CatQ?tab=readme-ov-file#installation) yang tersedia pada deskripsi di bawah.
 
 ### Fitur
 * `tanda merah` (untuk catatan penting)
