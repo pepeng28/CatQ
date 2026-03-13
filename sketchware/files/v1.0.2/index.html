@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Rak Buku Digital</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+                font-family: "Courier New", Courier, monospace;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-touch-callout: none;
+            }
+            input,
+            textarea {
+                user-select: text;
+                -webkit-user-select: text;
+            }
+            body {
+                background-color: #fff9eb;
+                margin: 40px 0 0 0;
+                padding: 20px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-bottom: 80vh;
+                min-height: 100vh;
+            }
+            .container {
+                width: 100%;
+                max-width: 500px;
+                padding: 0 20px;
+            }
+            h1 {
+                text-align: center;
+                color: #333;
+                margin-bottom: 30px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+            .add-box {
+                display: flex;
+                gap: 10px;
+                background: white;
+                padding: 15px;
+                border-radius: 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+                margin-bottom: 25px;
+            }
+            input {
+                flex: 1;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                outline: none;
+                font-size: 1rem;
+            }
+            .btn-add {
+                font-size: 40px;
+                background: #333;
+                color: white;
+                border: none;
+                padding: 0 10px;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .section-label {
+                font-size: 0.75rem;
+                font-weight: bold;
+                color: #888;
+                margin-bottom: 10px;
+                display: block;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .book-card {
+                background: white;
+                margin-bottom: 15px;
+                padding: 20px;
+                border-radius: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                cursor: pointer;
+                transition: 0.2s;
+                position: relative;
+                overflow: hidden;
+            }
+            .book-card:active {
+                transform: scale(0.97);
+            }
+            .book-normal {
+                border-left: 12px solid #ccc;
+            }
+            .book-priority {
+                border-left: 12px solid #ff4d4d;
+                background: #fffafa;
+            }
+            .book-info {
+                flex: 1;
+            }
+            .book-title {
+                font-size: 1.1rem;
+                font-weight: 900;
+                color: #222;
+                display: block;
+                text-transform: uppercase;
+            }
+            .book-meta {
+                font-size: 0.75rem;
+                color: #888;
+                margin-top: 5px;
+            }
+            .prio-preview {
+                font-size: 0.7rem;
+                color: #ff4d4d;
+                margin-top: 8px;
+                font-style: italic;
+            }
+            .btn-del {
+                color: #ff4d4d;
+                font-size: 0.7rem;
+                font-weight: bold;
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #ff4d4d;
+                margin-left: 10px;
+            }
+            .btn-del:hover {
+                background: #ff4d4d;
+                color: white;
+            }
+            .popup-bg {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(4px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            .popup-box {
+                background: white;
+                padding: 25px;
+                border-radius: 14px;
+                width: 90%;
+                max-width: 320px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                text-align: center;
+            }
+            .popup-text {
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 20px;
+            }
+            .popup-buttons {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+            .popup-btn {
+                border: none;
+                padding: 10px 16px;
+                border-radius: 6px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .popup-btn.ok {
+                background: #333;
+                color: white;
+            }
+            .popup-btn.cancel {
+                border: 1px solid #ff4d4d;
+                color: #ff4d4d;
+                background: white;
+            }
+            .popup-btn.cancel:hover {
+                background: #ff4d4d;
+                color: white;
+            }
+        </style>
+    </head>
+    <body oncontextmenu="return false;">
+        <div class="container">
+            <h1>RAK BUKU</h1>
+            <div class="add-box">
+                <input
+                    type="text"
+                    id="bookInput"
+                    placeholder="Beri nama buku baru..."
+                />
+                <button class="btn-add" onclick="addBook()">+</button>
+            </div>
+            <span class="section-label">Buku Utama</span>
+            <div class="book-card book-priority" id="statisPriority">
+                <div class="book-info">
+                    <span class="book-title">CATATAN PENTING</span>
+                    <span class="book-meta" id="countPriority">0 Kertas</span>
+                    <div class="prio-preview" id="previewPriority">
+                        Memuat data...
+                    </div>
+                </div>
+            </div>
+            <span class="section-label" style="margin-top: 20px"
+                >Koleksi Buku</span
+            >
+            <div id="bookList"></div>
+        </div>
+
+        <!-- POPUP -->
+        <div id="popupBg" class="popup-bg">
+            <div class="popup-box">
+                <div class="popup-text" id="popupText"></div>
+                <div class="popup-buttons">
+                    <button class="popup-btn cancel" onclick="closePopup()">
+                        BATAL
+                    </button>
+                    <button class="popup-btn ok" id="popupOk">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ==================== DATA ====================
+            let data = JSON.parse(localStorage.getItem("notes_v4")) || {};
+
+            // ==================== RENDER ====================
+            function render() {
+                const list = document.getElementById("bookList");
+                const countPrioLabel = document.getElementById("countPriority");
+                const previewPrioLabel =
+                    document.getElementById("previewPriority");
+
+                list.innerHTML = "";
+
+                let totalPrioGlobal = 0;
+                let titlesPrio = [];
+
+                const bookIds = Object.keys(data);
+
+                bookIds.forEach((id) => {
+                    const book = data[id];
+                    let bookPrioCount = 0;
+
+                    book.papers.forEach((p) => {
+                        if (p.priority) {
+                            totalPrioGlobal++;
+                            bookPrioCount++;
+                            if (p.title) titlesPrio.push(p.title);
+                        }
+                    });
+
+                    const card = document.createElement("div");
+                    card.className = "book-card book-normal";
+
+                    // Navigasi menggunakan query parameter (href biasa)
+                    card.onclick = () => {
+                        window.location.href =
+                            "kertas.html?id=" + encodeURIComponent(id);
+                    };
+
+                    card.innerHTML = `
+        <div class="book-info">
+            <span class="book-title">${book.name}</span>
+            <span class="book-meta">${book.papers.length} Kertas (${bookPrioCount} Penting)</span>
+        </div>
+        <div class="btn-del" onclick="deleteBook(event,'${id}')">HAPUS</div>
+        `;
+
+                    list.appendChild(card);
+                });
+
+                countPrioLabel.innerText = `${totalPrioGlobal} Kertas Tersemat`;
+
+                if (titlesPrio.length > 0) {
+                    previewPrioLabel.innerText =
+                        "Catatan: " +
+                        titlesPrio.slice(0, 3).join(", ") +
+                        (titlesPrio.length > 3 ? "..." : "");
+                } else {
+                    previewPrioLabel.innerText =
+                        "Klik untuk melihat semua tanda merah.";
+                }
+
+                // Navigasi untuk CATATAN PENTING menggunakan query parameter
+                document.getElementById("statisPriority").onclick = () => {
+                    if (totalPrioGlobal === 0) {
+                        showPopup("Belum ada catatan bertanda merah!");
+                    } else {
+                        window.location.href = "kertas.html?priority=all";
+                    }
+                };
+            }
+
+            // ==================== TAMBAH BUKU ====================
+            function addBook() {
+                const nameInput = document.getElementById("bookInput");
+                const name = nameInput.value.trim();
+                if (!name) return;
+                const id = "b" + Date.now();
+                data[id] = { name: name, papers: [] };
+                save();
+                nameInput.value = "";
+                render();
+            }
+
+            // ==================== HAPUS BUKU ====================
+            function deleteBook(e, id) {
+                e.stopPropagation();
+                showPopup(`Hapus buku "${data[id].name}" dan isinya?`, () => {
+                    delete data[id];
+                    save();
+                    render();
+                });
+            }
+
+            // ==================== SAVE ====================
+            function save() {
+                localStorage.setItem("notes_v4", JSON.stringify(data));
+            }
+
+            // ==================== POPUP ====================
+            let popupCallback = null;
+
+            function showPopup(text, callback = null) {
+                document.getElementById("popupText").innerText = text;
+                document.getElementById("popupBg").style.display = "flex";
+                popupCallback = callback;
+                const cancelBtn = document.querySelector(".popup-btn.cancel");
+                cancelBtn.style.display = callback ? "inline-block" : "none";
+            }
+
+            function closePopup() {
+                document.getElementById("popupBg").style.display = "none";
+            }
+
+            document.getElementById("popupOk").onclick = () => {
+                closePopup();
+                if (popupCallback) popupCallback();
+            };
+
+            // ==================== INIT ====================
+            window.onload = render;
+        </script>
+    </body>
+</html>

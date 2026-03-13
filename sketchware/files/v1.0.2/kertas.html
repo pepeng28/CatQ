@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Isi Buku - Digital Notes</title>
+        <style>
+            /* ========== CSS ========== */
+            * {
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+                user-select: none;
+                -webkit-user-select: none;
+                outline: none;
+            }
+
+            body {
+                font-family: "Courier New", Courier, monospace;
+                background-color: #e5e5e5;
+                margin: 0;
+                padding: 15px;
+                padding-top: 75px;
+                /* PADDING BODY DIUBAH: dari 80vh menjadi 20px */
+                padding-bottom: 80vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                min-height: 100vh;
+                justify-content: center;
+            }
+
+            #headerNav {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: #fff;
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 8000;
+            }
+
+            #bookTitleLabel {
+                font-weight: 900;
+                color: #555;
+                text-transform: uppercase;
+                max-width: 60%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .back-home-btn {
+                position: fixed;
+                left: 20px;
+                bottom: 20px;
+                width: 40px;
+                height: 40px;
+                background-color: #333;
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                font-size: 28px;
+                font-weight: bold;
+                z-index: 6000;
+                transition: transform 0.2s;
+            }
+
+            .back-home-btn:hover {
+                transform: scale(1.05);
+            }
+
+            #globalOverlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.2);
+                backdrop-filter: blur(0px);
+                -webkit-backdrop-filter: blur(0px);
+                z-index: 3000;
+                display: none;
+                opacity: 0;
+                pointer-events: none;
+                transition:
+                    opacity 0.4s ease,
+                    backdrop-filter 0.4s ease;
+            }
+
+            #globalOverlay.is-active {
+                display: block;
+                opacity: 1;
+                backdrop-filter: blur(1px);
+                -webkit-backdrop-filter: blur(1px);
+                pointer-events: auto;
+            }
+
+            .btn-new-paper {
+                position: fixed !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                padding: 15px 25px !important;
+                background: #333 !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 50px !important;
+                font-weight: bold !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+                z-index: 6000 !important;
+                cursor: pointer !important;
+                display: block; /* tanpa !important */
+            }
+
+            #paperWrapper {
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
+                padding: 0 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .card {
+                width: 100%;
+                position: relative;
+                min-height: 200px;
+                border-radius: 4px;
+                background-color: #fff9eb;
+                border-left: 5px solid #cccccc;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+                transition: box-shadow 0.2s;
+                margin: 0 auto;
+            }
+
+            .card.is-focused {
+                z-index: 7000;
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+                transform: scale(1.02);
+                transition:
+                    transform 0.3s ease,
+                    box-shadow 0.3s ease;
+            }
+
+            .priority-clipper {
+                position: absolute;
+                top: 0;
+                right: 20px;
+                width: 14px;
+                height: 45px;
+                overflow: hidden;
+                pointer-events: none;
+                z-index: 5;
+            }
+
+            .priority-tag {
+                position: absolute;
+                top: -45px;
+                left: 0;
+                width: 100%;
+                height: 40px;
+                background-color: #ff4d4d;
+                border-radius: 0 0 2px 2px;
+                transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            .card.is-priority .priority-tag {
+                top: 0 !important;
+            }
+
+            .priority-trigger {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 60px;
+                height: 60px;
+                z-index: 20;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            .card-content {
+                padding: 35px 20px 20px;
+                position: relative;
+                overflow: hidden;
+                border-radius: 4px;
+            }
+
+            .titleInput,
+            .contentInput {
+                width: 100%;
+                border: none;
+                background: transparent;
+                outline: none;
+                font-family: inherit;
+                resize: none;
+                display: block;
+                pointer-events: none;
+                user-select: text;
+                -webkit-user-select: text;
+            }
+
+            .titleInput {
+                font-size: 1.4rem;
+                font-weight: bold;
+                color: #222;
+                margin-bottom: 10px;
+                padding-right: 30px;
+            }
+
+            .input-wrapper {
+                position: relative;
+                width: min(34ch, 100%);
+                min-height: 130px;
+            }
+
+            .lineLayer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                color: transparent;
+                text-decoration: underline;
+                text-decoration-color: #dcdcdc;
+                text-underline-offset: 12px;
+                text-decoration-thickness: 1px;
+                text-decoration-skip-ink: none;
+                z-index: 1;
+                white-space: pre;
+                font-size: 1.1rem;
+                line-height: 2.2rem;
+                pointer-events: none;
+            }
+
+            .contentInput {
+                position: relative;
+                color: #333;
+                z-index: 2;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                font-size: 1.1rem;
+                line-height: 2.2rem;
+                background: transparent;
+                overflow: hidden;
+                overflow-anchor: none;
+                touch-action: manipulation;
+            }
+
+            .card.is-editing {
+                z-index: 7000;
+            }
+
+            #headerNav,
+            .back-home-btn,
+            .btn-new-paper,
+            #popupBg,
+            .priority-tag,
+            .action-btn {
+                user-select: none !important;
+                -webkit-user-select: none !important;
+            }
+
+            .titleInput,
+            .contentInput {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+
+            .card.is-editing .titleInput,
+            .card.is-editing .contentInput {
+                user-select: text !important;
+                -webkit-user-select: text !important;
+                pointer-events: auto !important;
+            }
+
+            ::selection {
+                background: rgba(0, 0, 0, 0.1);
+            }
+
+            .footer-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 20px;
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                padding-top: 15px;
+            }
+
+            .btn-color {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition:
+                    transform 0.2s,
+                    border-color 0.2s;
+            }
+            .btn-color.selected {
+                border-color: #555;
+                transform: scale(1.1);
+            }
+
+            .action-btn {
+                padding: 10px 20px;
+                font-weight: bold;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                background: white;
+                font-family: inherit;
+                cursor: pointer;
+            }
+            .action-btn.active {
+                background-color: #f0f0f0;
+                color: #000;
+            }
+
+            .delete-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 100;
+            }
+
+            .delete-btn {
+                background: #ff4d4d;
+                color: white;
+                border: 2px solid #333;
+                padding: 15px 30px;
+                border-radius: 50px;
+                font-weight: bold;
+                cursor: pointer;
+                z-index: 101;
+                transform: scale(1);
+                transition: transform 0.2s;
+            }
+
+            .delete-btn:active {
+                transform: scale(0.9);
+            }
+
+            .origin-book-tag {
+                font-size: 0.65rem;
+                color: #ff4d4d;
+                font-weight: bold;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+            }
+            .header-inner {
+                max-width: 500px;
+                margin: auto;
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .book-title {
+                display: block;
+                padding-left: 39px;
+            }
+        </style>
+    </head>
+    <body onclick="handleGlobalClick(event)" oncontextmenu="return false;">
+        <div id="headerNav">
+            <div class="header-inner">
+                <div></div>
+                <div id="bookTitleLabel" class="book-title">MEMUAT...</div>
+                <div style="width: 40px"></div>
+            </div>
+        </div>
+        <div class="back-home-btn" id="backHomeBtn">=</div>
+        <div id="globalOverlay"></div>
+        <div id="paperWrapper"></div>
+
+        <button class="btn-new-paper" id="btnAdd" onclick="addNewPaper(event)">
+            + Kertas Baru
+        </button>
+
+        <div
+            id="popupBg"
+            style="
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(4px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            "
+        >
+            <div
+                style="
+                    background: white;
+                    padding: 25px;
+                    border-radius: 14px;
+                    width: 90%;
+                    max-width: 320px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                    text-align: center;
+                "
+            >
+                <div
+                    id="popupText"
+                    style="
+                        font-weight: bold;
+                        color: #333;
+                        margin-bottom: 20px;
+                        font-family:
+                            &quot;Courier New&quot;, Courier, monospace;
+                    "
+                ></div>
+                <div style="display: flex; gap: 10px; justify-content: center">
+                    <button
+                        onclick="closePopup()"
+                        style="
+                            border: 1px solid #ff4d4d;
+                            color: #ff4d4d;
+                            background: white;
+                            padding: 10px 16px;
+                            border-radius: 6px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            font-family: inherit;
+                        "
+                    >
+                        BATAL
+                    </button>
+                    <button
+                        id="popupOk"
+                        style="
+                            background: #333;
+                            color: white;
+                            border: none;
+                            padding: 10px 16px;
+                            border-radius: 6px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            font-family: inherit;
+                        "
+                    >
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ==================== DATA & INIT ====================
+            let allData = JSON.parse(localStorage.getItem("notes_v4")) || {};
+            let currentId = null; // tidak lagi mengambil dari localStorage
+            let holdTimer, autoCancelTimer;
+
+            // Fungsi untuk membaca parameter dari URL
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
+
+            // Tentukan currentId berdasarkan parameter
+            const idParam = getQueryParam("id");
+            const priorityParam = getQueryParam("priority");
+
+            if (priorityParam === "all") {
+                currentId = "VIEW_ALL_PRIORITY"; // mode lihat semua catatan penting
+            } else if (idParam && allData[idParam]) {
+                currentId = idParam; // buku tertentu
+            } else {
+                // Jika tidak ada parameter yang valid, kembali ke rak buku
+                window.location.href = "index.html";
+            }
+
+            function save() {
+                localStorage.setItem("notes_v4", JSON.stringify(allData));
+            }
+
+            // ==================== FUNGSI UTILITAS (PERBAIKAN syncText) ====================
+            function autoHeight(el) {
+                const top = window.pageYOffset;
+                el.style.height = "auto";
+                el.style.height = el.scrollHeight + "px";
+                window.scrollTo(0, top);
+            }
+
+            // Fungsi untuk mendapatkan lebar 1 karakter (dalam px) untuk font monospace
+            function getCharWidth() {
+                let span = document.createElement("span");
+                span.style.fontFamily = "'Courier New', Courier, monospace";
+                span.style.fontSize = "1.1rem"; // sesuaikan dengan ukuran .contentInput
+                span.style.visibility = "hidden";
+                span.style.position = "absolute";
+                span.innerText = "0".repeat(10);
+                document.body.appendChild(span);
+                let width = span.offsetWidth / 10;
+                document.body.removeChild(span);
+                return width;
+            }
+
+            function syncText(bid, idx, el, event) {
+                const p = allData[bid].papers[idx];
+                const content = el.value;
+
+                p.content = content;
+                localStorage.setItem("notes_v4", JSON.stringify(allData));
+
+                const layer = el.previousElementSibling;
+                const style = window.getComputedStyle(el);
+                const fontSize = parseFloat(style.fontSize);
+                // Lebar elemen (contentInput) dalam px
+                const width = el.clientWidth;
+
+                // Hitung jumlah karakter per baris berdasarkan lebar karakter monospace
+                const charWidth = getCharWidth(); // lebar 1 karakter dalam px
+                //const charCount = Math.max(1, Math.floor(width / charWidth));
+                const charCount = 29;
+
+                let rawLines = content.split("\n");
+                let lines = [];
+
+                rawLines.forEach((line) => {
+                    if (line.length === 0) {
+                        lines.push("");
+                        return;
+                    }
+                    for (let i = 0; i < line.length; i += charCount) {
+                        lines.push(line.slice(i, i + charCount));
+                    }
+                });
+
+                const minLines = 4;
+                while (lines.length < minLines) {
+                    lines.push("");
+                }
+
+                let disp = lines.map((l) => {
+                    let text = l || "_";
+                    let space = Math.max(charCount - text.length, 0);
+                    return text + "\u00A0".repeat(space);
+                });
+
+                layer.innerText = disp.join("\n");
+
+                const currentScroll = window.pageYOffset;
+
+                el.style.height = "auto";
+                const newH = el.scrollHeight;
+
+                if (el.style.height !== newH + "px") {
+                    el.style.height = newH + "px";
+                    layer.style.height = newH + "px";
+                }
+
+                if (window.pageYOffset !== currentScroll) {
+                    window.scrollTo(0, currentScroll);
+                }
+            }
+
+            function updateText(bid, idx, field, el) {
+                allData[bid].papers[idx][field] = el.value;
+                save();
+                if (field === "title") autoHeight(el);
+            }
+
+            // ==================== RENDER ====================
+            function render() {
+                const scrollPos = window.scrollY;
+
+                const wrapper = document.getElementById("paperWrapper");
+                const bookLabel = document.getElementById("bookTitleLabel");
+                const btnAdd = document.getElementById("btnAdd");
+                wrapper.innerHTML = "";
+
+                let papersToRender = [];
+
+                if (currentId === "VIEW_ALL_PRIORITY") {
+                    bookLabel.innerText = "CATATAN PENTING";
+                    btnAdd.style.display = "none";
+
+                    Object.keys(allData).forEach((bId) => {
+                        allData[bId].papers.forEach((p, idx) => {
+                            if (p.priority) {
+                                papersToRender.push({
+                                    ...p,
+                                    _bid: bId,
+                                    _idx: idx,
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    bookLabel.innerText = allData[currentId].name;
+                    btnAdd.style.display = "block";
+                    allData[currentId].papers.forEach((p, idx) => {
+                        papersToRender.push({
+                            ...p,
+                            _bid: currentId,
+                            _idx: idx,
+                        });
+                    });
+                }
+
+                papersToRender.forEach((p) => {
+                    const card = document.createElement("div");
+                    card.className = `card ${p.priority ? "is-priority" : ""}`;
+                    card.style.borderColor = p.color || "#ccc";
+                    card.dataset.bid = p._bid;
+                    card.dataset.idx = p._idx;
+
+                    card.addEventListener("touchstart", () => startHold(card));
+                    card.addEventListener("touchend", endHold);
+
+                    card.innerHTML = `
+                    <div class="priority-trigger" onclick="togglePriority(event, '${p._bid}', ${p._idx})"></div>
+                    <div class="priority-clipper">
+                        <div class="priority-tag"></div>
+                    </div>
+                    <div class="delete-overlay">
+                        <button class="delete-btn" onclick="removePaper(event, '${p._bid}', ${p._idx})">Hapus Kertas</button>
+                    </div>
+                    <div class="card-content">
+                        ${currentId === "VIEW_ALL_PRIORITY" ? `<div class="origin-book-tag">Buku: ${allData[p._bid].name}</div>` : ""}
+                        <textarea class="titleInput" readonly placeholder="Judul..." oninput="updateText('${p._bid}', ${p._idx}, 'title', this)">${p.title.replace(/</g, "&lt;")}</textarea>
+                        <div class="input-wrapper">
+                            <div class="lineLayer"></div>
+                            <textarea class="contentInput" readonly placeholder="Tulis catatan..." onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="syncText('${p._bid}', ${p._idx}, this, event)">${p.content.replace(/</g, "&lt;")}</textarea>
+                        </div>
+                        <div class="footer-container">
+                            <div class="color-palette" style="display:flex; gap:10px">
+                                <div class="btn-color ${p.color === "#ffadad" ? "selected" : ""}" style="background:#ffadad" onclick="changeColor(event, '${p._bid}', ${p._idx}, '#ffadad')"></div>
+                                <div class="btn-color ${p.color === "#9bf6ff" ? "selected" : ""}" style="background:#9bf6ff" onclick="changeColor(event, '${p._bid}', ${p._idx}, '#9bf6ff')"></div>
+                                <div class="btn-color ${p.color === "#caffbf" ? "selected" : ""}" style="background:#caffbf" onclick="changeColor(event, '${p._bid}', ${p._idx}, '#caffbf')"></div>
+                                <div class="btn-color ${p.color === "#bdb2ff" ? "selected" : ""}" style="background:#bdb2ff" onclick="changeColor(event, '${p._bid}', ${p._idx}, '#bdb2ff')"></div>
+                            </div>
+                            <button class="action-btn" onclick="toggleEdit(event, this)">Edit</button>
+                        </div>
+                    </div>
+                `;
+                    wrapper.appendChild(card);
+                    const content = card.querySelector(".contentInput");
+                    const title = card.querySelector(".titleInput");
+                    syncText(p._bid, p._idx, content, null);
+                    autoHeight(title);
+                });
+
+                window.scrollTo(0, scrollPos);
+            }
+
+            let popupCallback = null;
+
+            function showPopup(text, callback) {
+                // Tutup popup lain jika ada
+                closePopup();
+                document.getElementById("popupText").innerText = text;
+                document.getElementById("popupBg").style.display = "flex";
+                popupCallback = callback;
+            }
+
+            function closePopup() {
+                document.getElementById("popupBg").style.display = "none";
+            }
+
+            document.getElementById("popupOk").onclick = () => {
+                if (popupCallback) popupCallback();
+                closePopup();
+            };
+
+            function togglePriority(event, bid, idx) {
+                event.stopPropagation();
+                const paper = allData[bid].papers[idx];
+                const card = event.target.closest(".card");
+
+                if (currentId === "VIEW_ALL_PRIORITY") {
+                    // Tampilkan popup konfirmasi dengan judul kertas
+                    const judul = paper.title.trim() || "";
+                    showPopup(
+                        `${judul} yakin mau hapus dari daftar penting? nanti cari nya susah loh`,
+                        () => {
+                            paper.priority = false; // Matikan prioritas
+                            save();
+                            render(); // Render ulang agar card hilang dari tampilan
+                        }
+                    );
+                } else {
+                    // Toggle priority biasa (tanpa render ulang)
+                    paper.priority = !paper.priority;
+                    save();
+                    if (paper.priority) {
+                        card.classList.add("is-priority");
+                    } else {
+                        card.classList.remove("is-priority");
+                    }
+                }
+            }
+
+            function changeColor(event, bid, idx, color) {
+                event.stopPropagation();
+                allData[bid].papers[idx].color = color;
+                save();
+
+                // Update tampilan langsung tanpa render ulang
+                const card = event.target.closest(".card");
+                if (card) {
+                    // Ubah warna border kiri
+                    card.style.borderColor = color;
+
+                    // Update class selected pada palet warna
+                    const palette = card.querySelector(".color-palette");
+                    if (palette) {
+                        palette
+                            .querySelectorAll(".btn-color")
+                            .forEach((btn) => {
+                                btn.classList.remove("selected");
+                            });
+                        event.target.classList.add("selected");
+                    }
+                }
+            }
+
+            function addNewPaper(event) {
+                event.stopPropagation();
+                if (currentId === "VIEW_ALL_PRIORITY") return; // tidak boleh tambah di mode prioritas
+
+                allData[currentId].papers.push({
+                    title: "",
+                    content: "",
+                    color: "#ccc",
+                    priority: false,
+                });
+                save();
+                render();
+
+                setTimeout(() => {
+                    const cards = document.querySelectorAll(".card");
+                    const lastCard = cards[cards.length - 1];
+                    if (lastCard) {
+                        const targetPos = lastCard.offsetTop - 80;
+                        window.scrollTo({
+                            top: targetPos,
+                            behavior: "smooth",
+                        });
+                    }
+                }, 100);
+            }
+
+            function removePaper(event, bid, idx) {
+                event.stopPropagation();
+                clearTimeout(autoCancelTimer); // <--- batalkan timer sebelum hapus
+                allData[bid].papers.splice(idx, 1);
+                save();
+                cancelDelete();
+                render();
+            }
+
+            // ==================== EDIT MODE ====================
+            function toggleEdit(event, btn) {
+                event.stopPropagation();
+                const card = btn.closest(".card");
+                const title = card.querySelector(".titleInput");
+                const content = card.querySelector(".contentInput");
+
+                if (title.hasAttribute("readonly")) {
+                    closeAllEdit();
+
+                    card.classList.add("is-editing");
+                    title.removeAttribute("readonly");
+                    content.removeAttribute("readonly");
+
+                    const overlay = document.getElementById("globalOverlay");
+                    overlay.style.display = "block";
+                    setTimeout(() => {
+                        overlay.classList.add("is-active");
+                    }, 10);
+
+                    btn.innerText = "Simpan";
+                    btn.classList.add("active");
+
+                    content.focus();
+                } else {
+                    closeAllEdit();
+                }
+            }
+
+            function closeAllEdit() {
+                document.querySelectorAll(".card").forEach((card) => {
+                    card.classList.remove("is-editing");
+                    const title = card.querySelector(".titleInput");
+                    const content = card.querySelector(".contentInput");
+                    const btn = card.querySelector(".action-btn");
+
+                    if (title) title.setAttribute("readonly", true);
+                    if (content) content.setAttribute("readonly", true);
+                    if (btn) {
+                        btn.innerText = "Edit";
+                        btn.classList.remove("active");
+                    }
+                });
+
+                const overlay = document.getElementById("globalOverlay");
+                overlay.classList.remove("is-active");
+
+                setTimeout(() => {
+                    if (!overlay.classList.contains("is-active")) {
+                        overlay.style.display = "none";
+                    }
+                }, 400);
+            }
+
+            // ==================== HOLD UNTUK HAPUS ====================
+            function startHold(card) {
+                if (
+                    !card
+                        .querySelector(".contentInput")
+                        .hasAttribute("readonly")
+                )
+                    return;
+                closeAllEdit();
+
+                holdTimer = setTimeout(() => {
+                    const overlay = document.getElementById("globalOverlay");
+                    overlay.style.display = "block";
+                    setTimeout(() => {
+                        overlay.classList.add("is-active");
+                    }, 10);
+
+                    card.classList.add("is-focused");
+                    card.querySelector(".delete-overlay").style.display =
+                        "flex";
+                    card.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                    });
+
+                    // Set auto-cancel setelah 3 detik
+                    autoCancelTimer = setTimeout(() => {
+                        cancelDelete();
+                    }, 3000);
+                }, 1250);
+            }
+
+            function endHold() {
+                clearTimeout(holdTimer);
+            }
+
+            function cancelDelete() {
+                clearTimeout(autoCancelTimer);
+                const overlay = document.getElementById("globalOverlay");
+                overlay.classList.remove("is-active");
+
+                setTimeout(() => {
+                    if (!overlay.classList.contains("is-active")) {
+                        overlay.style.display = "none";
+                    }
+                }, 400);
+
+                document.querySelectorAll(".card").forEach((card) => {
+                    card.classList.remove("is-focused");
+                    setTimeout(() => {
+                        card.querySelector(".delete-overlay").style.display =
+                            "none";
+                    }, 200);
+                });
+            }
+
+            // ==================== GLOBAL CLICK ====================
+            function handleGlobalClick(e) {
+                // Jika klik di dalam popup, biarkan (jangan tutup popup)
+                if (e.target.closest("#popupBg")) return;
+
+                const editingCard = document.querySelector(".card.is-editing");
+                if (editingCard && editingCard.contains(e.target)) {
+                    return;
+                }
+
+                closeAllEdit();
+
+                const focused = document.querySelector(".card.is-focused");
+                if (focused) {
+                    cancelDelete();
+                }
+            }
+
+            // ==================== START ====================
+            render();
+
+            // Tombol kembali ke rak buku
+            document
+                .getElementById("backHomeBtn")
+                .addEventListener("click", function (e) {
+                    e.preventDefault(); // untuk jaga-jaga
+                    e.stopPropagation(); // hentikan bubbling
+                    location.replace("index.html");
+                });
+        </script>
+    </body>
+</html>
